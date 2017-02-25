@@ -1,0 +1,106 @@
+// Obstgarten, a german board game for children
+
+import Foundation
+
+enum Fruit {
+    case apple, cherry, pear, plum
+}
+
+enum Event  {
+    case fruit( Fruit)
+    case basket
+    case crow
+}
+
+func roll() -> Event {
+    let r =  arc4random_uniform(6)
+    var e : Event
+    switch r {
+    case 0: e = Event.fruit(Fruit.apple)
+    case 1: e=Event.fruit(Fruit.cherry)
+    case 2: e=Event.fruit (Fruit.pear)
+    case 3: e=Event.fruit(Fruit.plum)
+    case 4: e=Event.basket
+    case 5: e=Event.crow
+    default: assertionFailure()
+        e=Event.crow
+    }
+    return e
+}
+
+struct Obstgarten {
+    var nCrow = 9
+    
+    // todo verify 10
+    var nApples = 10, nCherries = 10, nPears = 10, nPlums = 10
+    
+    func fruitsLeft() -> Int {
+        let n = nApples + nCherries + nPears + nPlums
+        assert(0 <= n && n <= 40, "Fruits: \(n)")
+        return n
+    }
+    
+    func gameLost() -> Bool {
+        return nCrow == 0
+    }
+    
+    func gameWon() -> Bool {
+        return fruitsLeft() == 0
+    }
+    
+    func gameOver() -> Bool {
+        return gameLost() || gameWon()
+    }
+    
+    mutating func pick() {
+        if nApples > 0 {
+            nApples=nApples-1
+        } else if nCherries > 0 {
+            nCherries=nCherries - 1
+        } else if nPears > 0 {
+            nPears=nPears - 1
+        } else if nPlums > 0 {
+            nPlums=nPlums-1
+        }
+    }
+     mutating func play() {
+        while !gameOver() {
+            step()
+        }
+    }
+    
+    mutating func step() {
+        switch roll() {
+        case .basket:
+            pick()
+            if fruitsLeft() > 0 {
+                pick()
+            }
+        case .crow:
+            nCrow = nCrow - 1
+        case .fruit(.apple):
+            nApples = nApples - 1
+        case .fruit(.cherry):
+            nCherries = nCherries - 1
+        case .fruit(.pear):
+            nPears = nPears - 1
+        case .fruit(.plum):
+            nPlums = nPlums - 1
+        default:
+            assert(false) 
+        }
+    }
+}
+
+let nGames = 500
+var nWon = 0
+for i in 1 ... nGames {
+    var o = Obstgarten()
+    o.play()
+    if o.gameWon() {
+        nWon = nWon + 1
+    }
+}
+
+// Wins [%]
+let ratio = 100.0 / Double(nGames) * Double(nWon)
