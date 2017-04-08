@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"time"
 )
 
 type Obstgarten struct {
@@ -16,7 +17,7 @@ type Obstgarten struct {
 func main() {
 	const N = 10000
 	fmt.Println("starting...")
-	rand.Seed(131)
+	rand.Seed(time.Now().Unix())
 	wons := 0
 	for i := 0; i < N; i++ {
 		game := NewGame()
@@ -86,13 +87,29 @@ func (o *Obstgarten) step() {
 }
 
 // simple strategy: pick first available fruit
-
-func (o *Obstgarten) pick() {
+func (o *Obstgarten) simplePick() {
 	for i := 0; i < len(o.fruits); i++ {
 		if o.fruits[i] > 0 {
 			o.fruits[i]--
 			break
 		}
+	}
+}
+
+// Pick the fruit that has the most pieces left,
+// so that regular fruit rolls are not in vain
+func (o *Obstgarten) pick() {
+	max := 0
+	maxIndex := 0
+
+	for i := 0; i < len(o.fruits); i++ {
+		if o.fruits[i] > max {
+			max = o.fruits[i]
+			maxIndex = i
+		}
+	}
+	if o.fruits[maxIndex] > 0 {
+		o.fruits[maxIndex]--
 	}
 }
 
